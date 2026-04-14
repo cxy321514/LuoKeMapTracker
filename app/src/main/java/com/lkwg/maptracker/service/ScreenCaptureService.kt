@@ -244,7 +244,7 @@ class ScreenCaptureService : Service() {
      * 从 ImageReader 截取帧并裁剪小地图区域
      */
     private fun captureFrame(): Bitmap? {
-        val image: Image? = imageReader?.acquireLatestImage() ?: return null
+        val image: Image = imageReader?.acquireLatestImage() ?: return null
 
         try {
             val plane = image.planes[0]
