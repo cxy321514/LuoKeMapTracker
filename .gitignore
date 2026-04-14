@@ -3,11 +3,22 @@
 *.aab
 *.ap_
 *.dex
+
+# Gradle
 .gradle/
 build/
 local.properties
+
+# IDE
 .idea/
 *.iml
+*.iws
+*.ipr
 .DS_Store
+
+# Keystore
 *.jks
 *.keystore
+
+# Large map file (user-specific)
+app/src/main/assets/map_full.png
