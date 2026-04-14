@@ -61,7 +61,11 @@ class FloatingWindowService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         val filter = IntentFilter(ScreenCaptureService.ACTION_MATCH_RESULT)
-        registerReceiver(matchReceiver, filter, RECEIVER_NOT_EXPORTED)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(matchReceiver, filter, RECEIVER_NOT_EXPORTED)
+        } else {
+            registerReceiver(matchReceiver, filter)
+        }
 
         loadMap()
         createWindow()
@@ -170,8 +174,13 @@ class FloatingWindowService : Service() {
 
         if (cropW <= 0 || cropH <= 0) return
 
+        // ⚠️ 必须创建独立副本，不能直接用 createBitmap 共享原始像素缓冲区
+        // 否则画标记会永久污染大地图，导致后续匹配精度持续下降
         val cropped = try {
-            Bitmap.createBitmap(map, srcX, srcY, cropW, cropH)
+            val region = Bitmap.createBitmap(map, srcX, srcY, cropW, cropH)
+            val copy = region.copy(Bitmap.Config.ARGB_8888, true)
+            region.recycle()
+            copy
         } catch (e: Exception) {
             Log.e(TAG, "裁剪失败", e)
             return
