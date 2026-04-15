@@ -14,7 +14,7 @@ import java.net.URL
 
 /**
  * 地图数据仓库
- * - 从 assets 或网络加载大地图
+ * - 自动加载 / 下载 / 生成大地图
  * - 加载资源点数据
  * - 缓存管理
  */
@@ -24,11 +24,8 @@ object MapRepository {
     private const val MAP_FILE = "map_full.png"
     private const val RESOURCES_FILE = "game_resources.json"
 
-    // 地图下载 URL（可配置，留空则使用 assets 内置地图）
-    private const val DEFAULT_MAP_URL = ""
-
     /**
-     * 加载大地图（优先本地缓存 > assets > 网络下载）
+     * 加载大地图（优先用户文件 > 缓存 > assets > 自动生成）
      */
     suspend fun loadMap(context: Context): Bitmap? = withContext(Dispatchers.IO) {
         // 1. 用户手动选择的文件
@@ -52,34 +49,34 @@ object MapRepository {
             stream.close()
             if (bitmap != null) {
                 Log.d(TAG, "从 assets 加载: ${bitmap.width}x${bitmap.height}")
-                // 缓存到外部存储
                 cacheBitmap(context, bitmap)
                 return@withContext bitmap
             }
-        } catch (_: Exception) {
-            Log.d(TAG, "assets 中无地图文件")
-        }
+        } catch (_: Exception) {}
 
-        // 4. 网络下载
-        val mapUrl = ConfigManager.getMapDownloadUrl(context)
-        if (mapUrl.isNotEmpty()) {
-            Log.d(TAG, "从网络下载: $mapUrl")
-            return@withContext downloadAndCache(context, mapUrl)
-        }
+        // 4. 自动生成占位地图
+        Log.d(TAG, "未找到地图，自动生成...")
+        val generated = MapGenerator.generate()
+        cacheBitmap(context, generated)
+        return@withContext generated
+    }
 
-        Log.w(TAG, "无可用地图源")
-        return@withContext null
+    /**
+     * 确保有地图可用，没有就自动生成
+     */
+    suspend fun ensureMap(context: Context): Bitmap? {
+        if (hasMap(context)) return loadMap(context)
+        Log.d(TAG, "自动生成地图...")
+        val generated = MapGenerator.generate()
+        cacheBitmap(context, generated)
+        return generated
     }
 
     /**
      * 从指定 URL 下载并缓存地图
      */
     suspend fun downloadMap(context: Context, url: String): Bitmap? = withContext(Dispatchers.IO) {
-        downloadAndCache(context, url)
-    }
-
-    private fun downloadAndCache(context: Context, url: String): Bitmap? {
-        return try {
+        try {
             val conn = URL(url).openConnection() as HttpURLConnection
             conn.connectTimeout = 15000
             conn.readTimeout = 30000
@@ -88,7 +85,7 @@ object MapRepository {
 
             if (conn.responseCode != HttpURLConnection.HTTP_OK) {
                 Log.e(TAG, "下载失败: HTTP ${conn.responseCode}")
-                return null
+                return@withContext null
             }
 
             val bitmap = BitmapFactory.decodeStream(conn.inputStream)
@@ -96,7 +93,6 @@ object MapRepository {
             conn.disconnect()
 
             if (bitmap != null) {
-                Log.d(TAG, "下载成功: ${bitmap.width}x${bitmap.height}")
                 cacheBitmap(context, bitmap)
                 ConfigManager.setMapDownloadUrl(context, url)
             }
@@ -139,7 +135,6 @@ object MapRepository {
      */
     fun getMapSize(context: Context): Pair<Int, Int>? {
         val opts = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-
         val configPath = ConfigManager.getMapFilePath(context)
         if (configPath.isNotEmpty() && File(configPath).exists()) {
             BitmapFactory.decodeFile(configPath, opts)
@@ -149,7 +144,6 @@ object MapRepository {
                 BitmapFactory.decodeFile(cached.absolutePath, opts)
             }
         }
-
         return if (opts.outWidth > 0) Pair(opts.outWidth, opts.outHeight) else null
     }
 
@@ -158,10 +152,10 @@ object MapRepository {
      */
     fun loadResources(context: Context): List<GameResource> {
         val resources = mutableListOf<GameResource>()
-
         try {
             val json = context.assets.open(RESOURCES_FILE).bufferedReader().use { it.readText() }
-            val arr = JSONArray(json)
+            val root = JSONObject(json)
+            val arr = root.getJSONArray("resources")
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
                 val type = try {
@@ -181,11 +175,9 @@ object MapRepository {
                     )
                 )
             }
-            Log.d(TAG, "加载了 ${resources.size} 个资源点")
         } catch (e: Exception) {
             Log.w(TAG, "加载资源数据失败: ${e.message}")
         }
-
         return resources
     }
 

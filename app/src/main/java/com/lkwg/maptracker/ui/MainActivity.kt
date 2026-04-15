@@ -402,20 +402,28 @@ class MainActivity : AppCompatActivity() {
         sbH.progress = rect[3]
         updateCalInfo()
 
-        // 检查地图
-        val mapSize = MapRepository.getMapSize(this)
-        if (mapSize != null) {
-            tvMapInfo.text = "✅ 地图: ${mapSize.first}x${mapSize.second}"
-        } else {
-            tvMapInfo.text = "⚠️ 未选择大地图"
-        }
-
         switchAutoDetect.isChecked = ConfigManager.isAutoDetectEnabled(this)
         switchShowResources.isChecked = ConfigManager.isShowResourcesEnabled(this)
         llResourceFilters.visibility =
             if (ConfigManager.isShowResourcesEnabled(this)) View.VISIBLE else View.GONE
 
         setTrackingState(false)
+
+        // 自动检查/生成地图
+        lifecycleScope.launch {
+            val mapSize = MapRepository.getMapSize(this@MainActivity)
+            if (mapSize != null) {
+                tvMapInfo.text = "✅ 地图: ${mapSize.first}x${mapSize.second}"
+            } else {
+                tvMapInfo.text = "⏳ 正在生成地图..."
+                val bmp = MapRepository.ensureMap(this@MainActivity)
+                if (bmp != null) {
+                    tvMapInfo.text = "✅ 地图: ${bmp.width}x${bmp.height}（自动生成）"
+                } else {
+                    tvMapInfo.text = "❌ 地图生成失败"
+                }
+            }
+        }
     }
 
     private fun saveCalibration() {
