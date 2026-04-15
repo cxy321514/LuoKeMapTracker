@@ -2,8 +2,6 @@ package com.lkwg.maptracker.data
 
 import android.graphics.*
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 /**
  * 地图生成器

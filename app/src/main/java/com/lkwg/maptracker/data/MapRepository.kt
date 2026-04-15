@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.lkwg.maptracker.util.ConfigManager
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.*
