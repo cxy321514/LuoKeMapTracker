@@ -1,8 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 洛克王国地图追踪 - 应用图标前景 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp" android:height="108dp"
-    android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#1A237E" android:pathData="M0,0h108v108H0z"/>
-    <path android:fillColor="#FFFFFF" android:pathData="M54,28 L30,72 L54,62 L78,72Z"/>
-    <path android:fillColor="#FF5722" android:pathData="M54,40 m-6,0 a6,6 0,1 1,12 0 a6,6 0,1 1,-12 0"/>
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 地图底板 -->
+    <path
+        android:fillColor="#E8F5E9"
+        android:pathData="M28,32 L80,28 L82,76 L30,80 Z" />
+    <path
+        android:fillColor="#C8E6C9"
+        android:pathData="M28,32 L80,28 L82,76 L30,80 Z"
+        android:strokeColor="#2E7D32"
+        android:strokeWidth="1.5" />
+
+    <!-- 地图网格线 -->
+    <path
+        android:strokeColor="#A5D6A7"
+        android:strokeWidth="0.5"
+        android:pathData="M28,44 L80,40 M28,56 L81,52 M28,68 L81,64 M40,32 L38,80 M52,30 L50,78 M64,30 L62,77 M76,28 L74,76" />
+
+    <!-- 山脉符号 -->
+    <path
+        android:fillColor="#388E3C"
+        android:pathData="M42,60 L47,50 L52,60 Z" />
+    <path
+        android:fillColor="#43A047"
+        android:pathData="M48,60 L53,48 L58,60 Z" />
+
+    <!-- 水域 -->
+    <path
+        android:fillColor="#42A5F5"
+        android:pathData="M62,55 Q67,52 72,55 Q77,58 72,60 Q67,57 62,60 Z"
+        android:alpha="0.7" />
+
+    <!-- 指南针外圈 -->
+    <path
+        android:fillColor="#FF6F00"
+        android:pathData="M54,44 m-12,0 a12,12 0,1 1,24 0 a12,12 0,1 1,-24 0" />
+    <path
+        android:fillColor="#FFB300"
+        android:pathData="M54,44 m-10,0 a10,10 0,1 1,20 0 a10,10 0,1 1,-20 0" />
+
+    <!-- 指南针 - 北 -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M54,34 L50,44 L54,42 L58,44 Z" />
+    <!-- 指南针 - 南 -->
+    <path
+        android:fillColor="#FAFAFA"
+        android:pathData="M54,54 L50,44 L54,46 L58,44 Z" />
+
+    <!-- 中心点 -->
+    <path
+        android:fillColor="#D32F2F"
+        android:pathData="M54,44 m-2,0 a2,2 0,1 1,4 0 a2,2 0,1 1,-4 0" />
+
+    <!-- 定位标记 -->
+    <path
+        android:fillColor="#F44336"
+        android:pathData="M54,72 m-5,0 a5,5 0,1 1,10 0 a5,5 0,1 1,-10 0" />
+    <path
+        android:fillColor="#F44336"
+        android:pathData="M54,72 L51,65 L54,62 L57,65 Z" />
+    <path
+        android:fillColor="#FFCDD2"
+        android:pathData="M54,72 m-2,0 a2,2 0,1 1,4 0 a2,2 0,1 1,-4 0" />
+
+    <!-- 经纬度标记 -->
+    <path
+        android:fillColor="#7B1FA2"
+        android:pathData="M35,70 m-2,0 a2,2 0,1 1,4 0 a2,2 0,1 1,-4 0"
+        android:alpha="0.8" />
+    <path
+        android:fillColor="#1976D2"
+        android:pathData="M70,40 m-2,0 a2,2 0,1 1,4 0 a2,2 0,1 1,-4 0"
+        android:alpha="0.8" />
+    <path
+        android:fillColor="#F57F17"
+        android:pathData="M72,68 m-2,0 a2,2 0,1 1,4 0 a2,2 0,1 1,-4 0"
+        android:alpha="0.8" />
+
 </vector>

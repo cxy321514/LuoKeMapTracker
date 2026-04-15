@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 洛克王国地图追踪 - 应用图标背景 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp" android:height="108dp"
-    android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#1A237E" android:pathData="M0,0h108v108H0z"/>
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 深蓝渐变背景 -->
+    <path
+        android:fillColor="#1A237E"
+        android:pathData="M0,0h108v108H0z" />
+
+    <!-- 装饰光效 -->
+    <path
+        android:fillColor="#283593"
+        android:pathData="M0,0h108v108H0z"
+        android:alpha="0.6" />
+
 </vector>

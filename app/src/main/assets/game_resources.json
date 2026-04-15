@@ -1,0 +1,49 @@
+{
+  "resources": [
+    {"id": "npc_magic_teacher", "name": "魔法老师", "type": "NPC", "x": 1180, "y": 760, "description": "魔法学院主NPC", "icon": "🧙"},
+    {"id": "npc_pet_doctor", "name": "宠物医生", "type": "NPC", "x": 850, "y": 780, "description": "治疗受伤宠物", "icon": "💊"},
+    {"id": "npc_weapon_shop", "name": "武器商人", "type": "SHOP", "x": 1300, "y": 820, "description": "购买装备", "icon": "⚔️"},
+    {"id": "npc_potion_shop", "name": "药水商人", "type": "SHOP", "x": 1100, "y": 850, "description": "购买恢复道具", "icon": "🧪"},
+
+    {"id": "monster_fire_sprite", "name": "火精灵", "type": "MONSTER", "x": 1950, "y": 580, "description": "维苏威火山常见怪物", "icon": "🔥"},
+    {"id": "monster_ice_golem", "name": "冰巨人", "type": "MONSTER", "x": 2180, "y": 320, "description": "雪人谷精英怪", "icon": "❄️"},
+    {"id": "monster_water_sprite", "name": "水精灵", "type": "MONSTER", "x": 620, "y": 1580, "description": "人鱼湾水系怪物", "icon": "💧"},
+    {"id": "monster_rock_golem", "name": "岩石巨人", "type": "MONSTER", "x": 1780, "y": 1380, "description": "矿山守护怪", "icon": "🪨"},
+    {"id": "monster_fairy", "name": "花仙子", "type": "MONSTER", "x": 380, "y": 980, "description": "桃源精灵", "icon": "🌸"},
+    {"id": "monster_cloud_dragon", "name": "云龙", "type": "MONSTER", "x": 1480, "y": 380, "description": "天空城BOSS", "icon": "🐉"},
+
+    {"id": "herb_fire_grass", "name": "火焰草", "type": "COLLECTION", "x": 2020, "y": 650, "description": "火系药水材料", "icon": "🌿"},
+    {"id": "herb_ice_crystal", "name": "冰晶花", "type": "COLLECTION", "x": 2250, "y": 280, "description": "冰系药水材料", "icon": "💎"},
+    {"id": "herb_water_lily", "name": "水灵莲", "type": "COLLECTION", "x": 580, "y": 1620, "description": "水系回复材料", "icon": "🪷"},
+    {"id": "ore_iron", "name": "铁矿石", "type": "COLLECTION", "x": 1820, "y": 1350, "description": "锻造材料", "icon": "⛏️"},
+    {"id": "herb_magic_flower", "name": "魔法花", "type": "COLLECTION", "x": 1150, "y": 900, "description": "学院特产", "icon": "🌺"},
+
+    {"id": "portal_volcano", "name": "火山传送阵", "type": "PORTAL", "x": 1900, "y": 700, "description": "通往维苏威火山", "icon": "🌀"},
+    {"id": "portal_mine", "name": "矿山入口", "type": "PORTAL", "x": 1700, "y": 1300, "description": "通往拉布朗矿山", "icon": "🚪"},
+    {"id": "portal_sky", "name": "天空之门", "type": "PORTAL", "x": 1500, "y": 500, "description": "通往天空城", "icon": "☁️"},
+    {"id": "portal_sea", "name": "海底通道", "type": "PORTAL", "x": 700, "y": 1500, "description": "通往人鱼湾", "icon": "🐚"},
+    {"id": "portal_snow", "name": "雪山缆车", "type": "PORTAL", "x": 2100, "y": 400, "description": "通往雪人谷", "icon": "🚡"},
+    {"id": "portal_peach", "name": "桃源传送", "type": "PORTAL", "x": 450, "y": 1050, "description": "通往云烟桃源", "icon": "🍑"},
+
+    {"id": "dungeon_fire_cave", "name": "火焰洞穴", "type": "DUNGEON", "x": 2100, "y": 550, "description": "火系副本 Lv.30+", "icon": "🕳️"},
+    {"id": "dungeon_ice_palace", "name": "冰封宫殿", "type": "DUNGEON", "x": 2300, "y": 250, "description": "冰系副本 Lv.40+", "icon": "🏰"},
+    {"id": "dungeon_mine_deep", "name": "矿洞深处", "type": "DUNGEON", "x": 1850, "y": 1500, "description": "矿山副本 Lv.25+", "icon": "⚒️"},
+
+    {"id": "quest_board", "name": "任务公告栏", "type": "QUEST", "x": 1250, "y": 790, "description": "接取日常任务", "icon": "📋"},
+    {"id": "quest_guild", "name": "公会大厅", "type": "QUEST", "x": 1350, "y": 750, "description": "公会任务", "icon": "🏛️"},
+
+    {"id": "landmark_castle", "name": "王国城堡", "type": "LANDMARK", "x": 1200, "y": 700, "description": "洛克王国中心", "icon": "🏰"},
+    {"id": "landmark_fountain", "name": "许愿喷泉", "type": "LANDMARK", "x": 1150, "y": 750, "description": "城堡前广场", "icon": "⛲"},
+    {"id": "landmark_tree", "name": "千年古树", "type": "LANDMARK", "x": 500, "y": 1100, "description": "桃源地标", "icon": "🌳"}
+  ],
+  "regions": [
+    {"id": "magic_academy", "name": "魔法学院", "centerX": 1200, "centerY": 800, "width": 400, "height": 300},
+    {"id": "pet_garden", "name": "宠物园", "centerX": 800, "centerY": 1200, "width": 300, "height": 250},
+    {"id": "volcano", "name": "维苏威火山", "centerX": 2000, "centerY": 600, "width": 350, "height": 300},
+    {"id": "mine", "name": "拉布朗矿山", "centerX": 1800, "centerY": 1400, "width": 300, "height": 250},
+    {"id": "sky_city", "name": "天空城", "centerX": 1500, "centerY": 400, "width": 300, "height": 200},
+    {"id": "mermaid_bay", "name": "人鱼湾", "centerX": 600, "centerY": 1600, "width": 350, "height": 250},
+    {"id": "snow_valley", "name": "雪人谷", "centerX": 2200, "centerY": 300, "width": 300, "height": 250},
+    {"id": "peach_garden", "name": "云烟桃源", "centerX": 400, "centerY": 1000, "width": 300, "height": 300}
+  ]
+}

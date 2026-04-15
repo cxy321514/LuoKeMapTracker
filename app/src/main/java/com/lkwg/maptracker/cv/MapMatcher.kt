@@ -11,8 +11,12 @@ import org.opencv.imgproc.Imgproc
 /**
  * 基于 ORB 特征的地图匹配器
  *
- * ORB 替代 SIFT（Android OpenCV SDK 不内置 SIFT）
- * 配合 CLAHE 弱纹理增强，在海洋/纯色区域也能匹配
+ * 核心算法：
+ * 1. ORB 特征检测（替代 SIFT，Android 兼容）
+ * 2. CLAHE 弱纹理增强（海洋/纯色区域优化）
+ * 3. KNN + Lowe's ratio test 筛选
+ * 4. RANSAC 单应矩阵计算
+ * 5. 中心点变换 → 定位坐标 + 朝向
  */
 class MapMatcher {
 
@@ -20,7 +24,7 @@ class MapMatcher {
         private const val TAG = "MapMatcher"
         private const val RATIO_THRESH = 0.75f
         private const val RANSAC_THRESH = 5.0
-        private const val MIN_MATCHES = 10
+        private const val MIN_MATCHES = 8  // 降低最小匹配数以提高稳定性
     }
 
     private var fullMapGray: Mat? = null
@@ -31,15 +35,20 @@ class MapMatcher {
     private var fullMapWidth = 0
     private var fullMapHeight = 0
 
+    // 平滑过滤
+    private var lastResult: MatchResult? = null
+    private var smoothAlpha = 0.3  // 平滑系数
+
     data class MatchResult(
         val x: Double,
         val y: Double,
         val confidence: Float,
-        val rotation: Double
+        val rotation: Double,
+        val matchCount: Int = 0
     )
 
     /**
-     * 加载完整大地图
+     * 加载完整大地图并预计算特征
      */
     fun loadFullMap(mapBitmap: Bitmap) {
         release()
@@ -53,9 +62,17 @@ class MapMatcher {
         Imgproc.cvtColor(mapMat, grayMat, Imgproc.COLOR_RGBA2GRAY)
         mapMat.release()
 
+        // ORB 特征检测器
         orb = ORB.create(
-            5000, 1.2f, 8, 31, 0, 2,
-            ORB.HARRIS_SCORE, 31, 20
+            5000,    // 最大特征点数
+            1.2f,    // 金字塔缩放因子
+            8,       // 金字塔层数
+            31,      // 边界阈值
+            0,       // 第一层
+            2,       // WTA_K
+            ORB.HARRIS_SCORE,  // 评分方式
+            31,      // patchSize
+            20       // fastThreshold
         )
 
         matcher = org.opencv.features2d.DescriptorMatcher.create(
@@ -75,7 +92,7 @@ class MapMatcher {
     }
 
     /**
-     * 匹配小地图区域
+     * 匹配小地图区域，返回在大地图中的坐标
      */
     fun match(miniMapBitmap: Bitmap): MatchResult? {
         val mapGray = fullMapGray ?: return null
@@ -90,7 +107,7 @@ class MapMatcher {
         Imgproc.cvtColor(miniMat, miniGray, Imgproc.COLOR_RGBA2GRAY)
         miniMat.release()
 
-        // CLAHE 弱纹理增强
+        // CLAHE 弱纹理增强（对海洋、天空等弱特征区域有效）
         try {
             val clahe = Imgproc.createCLAHE(2.0, Size(8.0, 8.0))
             clahe.apply(miniGray, miniGray)
@@ -115,7 +132,7 @@ class MapMatcher {
             return null
         }
 
-        // Lowe's ratio test
+        // Lowe's ratio test 筛选优质匹配
         val goodMatches = mutableListOf<DMatch>()
         for (pair in matches) {
             val m = pair.toArray()
@@ -125,9 +142,9 @@ class MapMatcher {
         }
 
         if (goodMatches.size < MIN_MATCHES) {
-            Log.d(TAG, "优质匹配不足: ${goodMatches.size}")
+            Log.d(TAG, "优质匹配不足: ${goodMatches.size}/${MIN_MATCHES}")
             cleanup(miniGray, miniKps, miniDesc)
-            return null
+            return applySmoothing(null)
         }
 
         // RANSAC 单应矩阵
@@ -143,7 +160,7 @@ class MapMatcher {
         if (homography == null || homography.empty()) {
             cleanup(miniGray, miniKps, miniDesc)
             srcPts.release(); dstPts.release(); mask.release()
-            return null
+            return applySmoothing(null)
         }
 
         // 计算小地图中心在大地图中的位置
@@ -182,7 +199,44 @@ class MapMatcher {
 
         Log.d(TAG, "匹配成功: ($mapX, $mapY) 置信度:$confidence 匹配点:${goodMatches.size}")
 
-        return MatchResult(mapX, mapY, confidence, angle)
+        return applySmoothing(MatchResult(mapX, mapY, confidence, angle, goodMatches.size))
+    }
+
+    /**
+     * 位置平滑（防止抖动）
+     */
+    private fun applySmoothing(current: MatchResult?): MatchResult? {
+        if (current == null) {
+            // 保持上一帧位置但降低置信度
+            lastResult?.let { last ->
+                return last.copy(confidence = last.confidence * 0.5f)
+            }
+            return null
+        }
+
+        val last = lastResult
+        if (last == null || last.confidence < 0.2f) {
+            lastResult = current
+            return current
+        }
+
+        // 距离过大说明匹配跳变，不平滑
+        val dist = Math.hypot(current.x - last.x, current.y - last.y)
+        if (dist > 500) {
+            lastResult = current
+            return current
+        }
+
+        // 指数平滑
+        val smoothed = MatchResult(
+            x = last.x * (1 - smoothAlpha) + current.x * smoothAlpha,
+            y = last.y * (1 - smoothAlpha) + current.y * smoothAlpha,
+            confidence = current.confidence,
+            rotation = current.rotation,
+            matchCount = current.matchCount
+        )
+        lastResult = smoothed
+        return smoothed
     }
 
     fun isLoaded(): Boolean = fullMapGray != null
@@ -202,5 +256,6 @@ class MapMatcher {
         orb = null
         matcher?.clear()
         matcher = null
+        lastResult = null
     }
 }

@@ -4,7 +4,6 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.PixelFormat
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
@@ -17,6 +16,7 @@ import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
 import com.lkwg.maptracker.cv.MapMatcher
+import com.lkwg.maptracker.data.MapRepository
 import com.lkwg.maptracker.util.ConfigManager
 import kotlinx.coroutines.*
 import java.io.File
@@ -38,14 +38,13 @@ class ScreenCaptureService : Service() {
         // 匹配间隔（毫秒）
         const val MATCH_INTERVAL_MS = 200L
 
-        // 广播匹配结果
+        // 广播
         const val ACTION_MATCH_RESULT = "com.lkwg.maptracker.MATCH_RESULT"
         const val EXTRA_POS_X = "pos_x"
         const val EXTRA_POS_Y = "pos_y"
         const val EXTRA_CONFIDENCE = "confidence"
         const val EXTRA_ROTATION = "rotation"
 
-        // 本地广播（同进程内更高效安全）
         const val ACTION_STATUS = "com.lkwg.maptracker.STATUS"
         const val EXTRA_STATUS_MSG = "status_msg"
     }
@@ -63,7 +62,7 @@ class ScreenCaptureService : Service() {
     private var isCapturing = false
     private var mapLoaded = false
 
-    // 惯性导航状态
+    // 惯性导航
     private var lastKnownX = 0.0
     private var lastKnownY = 0.0
     private var consecutiveFails = 0
@@ -131,50 +130,21 @@ class ScreenCaptureService : Service() {
     private val mainHandler = Handler(Looper.getMainLooper())
 
     /**
-     * 加载大地图 - 按优先级查找：
-     * 1. 配置的文件路径
-     * 2. 外部存储 map_full.png
-     * 3. assets/map_full.png
+     * 通过 MapRepository 自动加载地图
      */
     private fun loadMap() {
         serviceScope.launch {
             try {
-                var bitmap: Bitmap? = null
-
-                // 1. 用户配置的路径
-                val configPath = ConfigManager.getMapFilePath(this@ScreenCaptureService)
-                if (configPath.isNotEmpty() && File(configPath).exists()) {
-                    bitmap = BitmapFactory.decodeFile(configPath)
-                    Log.d(TAG, "从配置路径加载: $configPath")
-                }
-
-                // 2. 外部存储默认路径
-                if (bitmap == null) {
-                    val extFile = File(getExternalFilesDir(null), "map_full.png")
-                    if (extFile.exists()) {
-                        bitmap = BitmapFactory.decodeFile(extFile.absolutePath)
-                        Log.d(TAG, "从外部存储加载: ${extFile.absolutePath}")
-                    }
-                }
-
-                // 3. assets 目录
-                if (bitmap == null) {
-                    try {
-                        val stream = assets.open("map_full.png")
-                        bitmap = BitmapFactory.decodeStream(stream)
-                        stream.close()
-                        Log.d(TAG, "从 assets 加载")
-                    } catch (_: Exception) {}
-                }
+                val bitmap = MapRepository.loadMap(this@ScreenCaptureService)
 
                 if (bitmap != null) {
                     matcher.loadFullMap(bitmap)
                     mapLoaded = true
                     showNotification("✅ 地图已加载 ${bitmap.width}x${bitmap.height}")
-                    broadcastStatus("地图加载成功")
+                    broadcastStatus("地图加载成功: ${bitmap.width}x${bitmap.height}")
                 } else {
-                    showNotification("⚠️ 未找到大地图文件 map_full.png")
-                    broadcastStatus("未找到大地图，请放入 map_full.png")
+                    showNotification("⚠️ 未找到大地图，请导入地图文件")
+                    broadcastStatus("未找到大地图，请从主界面导入")
                     Log.w(TAG, "未找到大地图文件")
                 }
             } catch (e: Exception) {
@@ -260,7 +230,7 @@ class ScreenCaptureService : Service() {
             )
             fullBitmap.copyPixelsFromBuffer(buffer)
 
-            // 从配置读取裁剪区域
+            // 裁剪小地图区域
             val rect = ConfigManager.getMinimapRect(this)
             val x = rect[0].coerceIn(0, fullBitmap.width - 1)
             val y = rect[1].coerceIn(0, fullBitmap.height - 1)
